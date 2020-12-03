@@ -8,7 +8,7 @@ public class Day3 : MonoBehaviour
     private TextAsset m_Input;
 
     [SerializeField]
-    private bool[,] m_MapTrees;
+    private List<Vector2Int> m_Steps;
 
     void Start()
     {
@@ -21,7 +21,7 @@ public class Day3 : MonoBehaviour
         int cols = inputLines[0].ToCharArray().Length;
 
         //rows by cols
-        m_MapTrees = new bool[rows, cols];
+        bool[,]  m_MapTrees = new bool[rows, cols];
 
         char treeSpace = '#';
 
@@ -37,19 +37,26 @@ public class Day3 : MonoBehaviour
             }
         }
 
-        Vector2Int position = Vector2Int.zero;
-        Vector2Int step = new Vector2Int(1, 3);
+        List<int> treeCounters = new List<int>();
+        int treeCountersMultiplied = 1;
 
-        int treeCounter = 0;
-
-        while (position.x < rows)
+        foreach (Vector2Int step in m_Steps)
         {
-            treeCounter += m_MapTrees[position.x, position.y] ? 1 : 0;
+            int treeCounter = 0;
+            Vector2Int position = Vector2Int.zero;
+            while (position.x < rows)
+            {
+                treeCounter += m_MapTrees[position.x, position.y] ? 1 : 0;
 
-            position += step;
-            position.y = position.y % cols;
+                position += step;
+                position.y = position.y % cols;
+            }
+
+            treeCounters.Add(treeCounter);
+            treeCountersMultiplied *= treeCounter;
+            Debug.Log("Number of trees encountered for step " + step.x + "," + step.y + " is : " + treeCounter);
         }
 
-        Debug.Log("Number of trees encountered: " + treeCounter);
+        Debug.Log("Result: " + treeCountersMultiplied);
     }
 }
