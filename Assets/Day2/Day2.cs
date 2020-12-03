@@ -12,6 +12,9 @@ public class Day2 : MonoBehaviour
         public int MinAppearences;
         public int MaxAppearences;
 
+        public int FirstPositionIndex;
+        public int SecondPositionIndex;
+
         public bool IsValid
         {
             get
@@ -19,6 +22,19 @@ public class Day2 : MonoBehaviour
                 int counter = Password.Length - Password.Replace(LetterCheck, "").Length;
 
                 return (counter >= MinAppearences && counter <= MaxAppearences);
+            }
+        }
+
+        public bool IsValidByPosition
+        {
+            get
+            {
+                char[] chars = Password.ToCharArray();
+                string firstPosition = chars[FirstPositionIndex].ToString();
+                string secondPosition = chars[SecondPositionIndex].ToString();
+
+                return (firstPosition == LetterCheck && secondPosition != LetterCheck ||
+                        firstPosition != LetterCheck && secondPosition == LetterCheck);
             }
         }
     }
@@ -43,7 +59,7 @@ public class Day2 : MonoBehaviour
             }
 
             string[] firstSplit = line.Split(':');
-            string password = firstSplit[1];
+            string password = firstSplit[1].Replace(" ", "").Replace("/r", "");
 
             string[] secondSplit = firstSplit[0].Split(' ');
             string letterCheck = secondSplit[1];
@@ -57,16 +73,21 @@ public class Day2 : MonoBehaviour
                 Password = password,
                 LetterCheck = letterCheck,
                 MinAppearences = min,
-                MaxAppearences = max
+                MaxAppearences = max,
+                FirstPositionIndex = min - 1,
+                SecondPositionIndex = max - 1,
             });
         }
 
         int counterValid = 0;
-        foreach(PasswordEntry password in m_Passwords)
+        int counterValidByPosition = 0;
+        foreach (PasswordEntry password in m_Passwords)
         {
             counterValid += password.IsValid ? 1 : 0;
+            counterValidByPosition += password.IsValidByPosition ? 1 : 0;
         }
 
         Debug.Log(counterValid + " valid passwords");
+        Debug.Log(counterValidByPosition + " valid passwords by position");
     }
 }
