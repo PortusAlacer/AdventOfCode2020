@@ -8,28 +8,27 @@ public class Day4 : MonoBehaviour
     [Serializable]
     private class Passport
     {
-        public int byr = -1;
-        public int iyr = -1;
-        public int eyr = -1;
-        //in m
-        public string hgt = string.Empty;
-        public string hcl = string.Empty;
-        public string ecl = string.Empty;
-        public string pid = string.Empty;
+        private string m_byr = string.Empty;
+        private string m_iyr = string.Empty;
+        private string m_eyr = string.Empty;
+        private string m_hgt = string.Empty;
+        private string m_hcl = string.Empty;
+        private string m_ecl = string.Empty;
+        private string m_pid = string.Empty;
         //optional
-        public int cid = -1;
+        private int m_cid = -1;
 
         public bool IsValid
         {
             get
             {
-                return (byr != -1 &&
-                        iyr != -1 &&
-                        eyr != -1 &&
-                        !string.IsNullOrEmpty(hgt) &&
-                        !string.IsNullOrEmpty(hcl) &&
-                        !string.IsNullOrEmpty(ecl) &&
-                        !string.IsNullOrEmpty(pid));
+                return (!string.IsNullOrEmpty(m_byr) &&
+                        !string.IsNullOrEmpty(m_iyr) &&
+                        !string.IsNullOrEmpty(m_eyr) &&
+                        !string.IsNullOrEmpty(m_hgt) &&
+                        !string.IsNullOrEmpty(m_hcl) &&
+                        !string.IsNullOrEmpty(m_ecl) &&
+                        !string.IsNullOrEmpty(m_pid));
             }
         }
 
@@ -38,16 +37,16 @@ public class Day4 : MonoBehaviour
             switch (id)
             {
                 case "byr":
-                    byr = int.Parse(info);
+                    m_byr = info;
                     break;
                 case "iyr":
-                    iyr = int.Parse(info);
+                    m_iyr = info;
                     break;
                 case "eyr":
-                    eyr = int.Parse(info);
+                    m_eyr = info;
                     break;
                 case "hgt":
-                    hgt = info;
+                    m_hgt = info;
                     //int value = int.Parse(string.Join("", info.Take(info.Length - 2)));
                     //string units = string.Join("", info.Skip(info.Length - 2).Take(2));
                     //if (units == "cm")
@@ -60,16 +59,16 @@ public class Day4 : MonoBehaviour
                     //}
                     break;
                 case "hcl":
-                    hcl = info;
+                    m_hcl = info;
                     break;
                 case "ecl":
-                    ecl = info;
+                    m_ecl = info;
                     break;
                 case "pid":
-                    pid = info;
+                    m_pid = info;
                     break;
                 case "cid":
-                    cid = int.Parse(info);
+                    m_cid = int.Parse(info);
                     break;
             }
         }
