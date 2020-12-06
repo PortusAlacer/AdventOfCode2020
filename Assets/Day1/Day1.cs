@@ -6,7 +6,7 @@ using UnityEngine;
 public class Day1 : MonoBehaviour
 {
     [SerializeField]
-    private TextAsset m_Input;
+    private TextAsset m_Input = null;
 
     void Start()
     {

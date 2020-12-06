@@ -5,10 +5,10 @@ using UnityEngine;
 public class Day3 : MonoBehaviour
 {
     [SerializeField]
-    private TextAsset m_Input;
+    private TextAsset m_Input = null;
 
     [SerializeField]
-    private List<Vector2Int> m_Steps;
+    private List<Vector2Int> m_Steps = new List<Vector2Int>();
 
     void Start()
     {

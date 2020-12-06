@@ -40,16 +40,14 @@ public class Day2 : MonoBehaviour
     }
 
     [SerializeField]
-    private TextAsset m_Input;
+    private TextAsset m_Input = null;
 
-    private List<PasswordEntry> m_Passwords;
+    private List<PasswordEntry> m_Passwords = new List<PasswordEntry>();
 
     void Start()
     {
         string input = m_Input.text;
         string[] inputLines = input.Split('\n');
-
-        m_Passwords = new List<PasswordEntry>();
 
         foreach (string line in inputLines)
         {
