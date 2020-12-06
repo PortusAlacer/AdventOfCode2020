@@ -16,7 +16,7 @@ public class Day4 : MonoBehaviour
         private string m_ecl = string.Empty;
         private string m_pid = string.Empty;
         //optional
-        private int m_cid = -1;
+        private string m_cid = string.Empty;
 
         public bool IsValid
         {
@@ -37,40 +37,127 @@ public class Day4 : MonoBehaviour
             switch (id)
             {
                 case "byr":
-                    m_byr = info;
+                    ParseBYR(info);
                     break;
                 case "iyr":
-                    m_iyr = info;
+                    ParseIYR(info);
                     break;
                 case "eyr":
-                    m_eyr = info;
+                    ParseEYR(info);
                     break;
                 case "hgt":
-                    m_hgt = info;
-                    //int value = int.Parse(string.Join("", info.Take(info.Length - 2)));
-                    //string units = string.Join("", info.Skip(info.Length - 2).Take(2));
-                    //if (units == "cm")
-                    //{
-                    //    hgt = (float)value / 100f;
-                    //}
-                    //else
-                    //{
-                    //    hgt = (float)value / 39.3701f;
-                    //}
+                    ParseHGT(info);
                     break;
                 case "hcl":
-                    m_hcl = info;
+                    ParseHCL(info);
                     break;
                 case "ecl":
-                    m_ecl = info;
+                    ParseECL(info);
                     break;
                 case "pid":
-                    m_pid = info;
+                    ParsePID(info);
                     break;
                 case "cid":
-                    m_cid = int.Parse(info);
+                    ParseCID(info);
                     break;
             }
+        }
+
+        private void ParseBYR(string info)
+        {
+            int year = int.Parse(info);
+            if (year >= 1920 && year <= 2002)
+            {
+                m_byr = info;
+            }
+        }
+
+        private void ParseIYR(string info)
+        {
+            int year = int.Parse(info);
+            if (year >= 2010 && year <= 2020)
+            {
+                m_iyr = info;
+            }
+        }
+
+        private void ParseEYR(string info)
+        {
+            int year = int.Parse(info);
+            if (year >= 2020 && year <= 2030)
+            {
+                m_eyr = info;
+            }
+        }
+
+        private void ParseHGT(string info)
+        {
+            int.TryParse(string.Join("", info.Take(info.Length - 2)), out int value);
+            string units = string.Join("", info.Skip(info.Length - 2).Take(2));
+            if (units == "cm")
+            {
+                if (value >= 150 && value <= 193)
+                {
+                    m_hgt = info;
+                }
+            }
+            else
+            {
+                if (value >= 59 && value <= 76)
+                {
+                    m_hgt = info;
+                }
+            }
+        }
+
+        private void ParseHCL(string info)
+        {
+            char[] availableColorCharacters = new char[17] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+            char[] characters = info.ToCharArray();
+
+            if (characters[0] != '#')
+            {
+                return;
+            }
+
+            if (characters.Length != 7)
+            {
+                return;
+            }
+
+            for (int i = 1; i < 7; i++)
+            {
+                if (!availableColorCharacters.Contains(characters[i]))
+                {
+                    return;
+                }
+            }
+
+            m_hcl = info;
+        }
+
+        private void ParseECL(string info)
+        {
+            string[] availableColors = new string[7] { "amb", "blu", "brn", "gry", "grn", "hzl", "oth" };
+
+            if (availableColors.Contains(info))
+            {
+                m_ecl = info;
+            }
+        }
+
+        private void ParsePID(string info)
+        {
+            if (info.Length == 9)
+            {
+                m_pid = info;
+            }
+        }
+
+        private void ParseCID(string info)
+        {
+            m_cid = info;
         }
     }
 
