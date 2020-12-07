@@ -12,13 +12,15 @@ public class Day5 : MonoBehaviour
     private const int rows = 128;
     private const int cols = 8;
 
+    private bool[] m_Seats;
+
     private void Start()
     {
         string input = m_Input.text;
         string[] inputLines = input.Split('\n');
 
         //rows by cols
-        bool[] seats = Enumerable.Repeat(false, rows * cols).ToArray();
+        m_Seats = Enumerable.Repeat(false, rows * cols).ToArray();
 
         foreach(string line in inputLines)
         {
@@ -27,12 +29,12 @@ public class Day5 : MonoBehaviour
             int row = BinarySearch(rowsInstructions, 0, rows - 1);
             int col = BinarySearch(colsInstructions, 0, cols - 1);
 
-            seats[row * cols + col] = true;
+            m_Seats[row * cols + col] = true;
 
             Debug.Log(line + " - row " + row + " - col " + col + " - id " + (row * cols + col).ToString());
         }
 
-        Debug.LogError(seats.ToList().FindLastIndex(s => s));
+        Debug.LogError(m_Seats.ToList().FindLastIndex(s => s));
     }
 
     private void MakeInstructions(string line, out Queue<bool> rowsInstructions, out Queue<bool> colsInstructions)
