@@ -40,6 +40,18 @@ public class Day7 : MonoBehaviour
 
             return false;
         }
+
+        public int GetCountInsideBags()
+        {
+            int count = 1;
+
+            foreach (KeyValuePair<string, int> bag in Contents)
+            {
+                count += bag.Value * m_BagRules[bag.Key].GetCountInsideBags();
+            }
+
+            return count;
+        }
     }
 
 
@@ -62,6 +74,8 @@ public class Day7 : MonoBehaviour
         }
 
         CountBags("shiny gold");
+
+        CountInsideBags("shiny gold");
     }
 
     private void ProcessRule(string line)
@@ -122,5 +136,10 @@ public class Day7 : MonoBehaviour
         }
 
         Debug.LogError("Possible bags " + m_PossibleBags.Count);
+    }
+
+    private void CountInsideBags(string target)
+    {
+        Debug.LogError(target + "bag has " + (m_BagRules[target].GetCountInsideBags() - 1) + " bags inside");
     }
 }
