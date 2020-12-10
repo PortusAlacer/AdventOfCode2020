@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Day8 : MonoBehaviour
 {
     [Serializable]
-    private class Instruction
+    private class Instruction : ICloneable
     {
         [Serializable]
         public enum InstructionType
@@ -24,6 +25,12 @@ public class Day8 : MonoBehaviour
         {
             Type = (InstructionType)Enum.Parse(typeof(InstructionType), type);
             Value = int.Parse(value);
+        }
+
+        public Instruction(InstructionType type, int value)
+        {
+            Type = type;
+            Value = value;
         }
 
         public bool Execute(ref int accumulator, out int jumpValue)
@@ -50,6 +57,11 @@ public class Day8 : MonoBehaviour
             Executed = true;
             return true;
         }
+
+        public object Clone()
+        {
+            return new Instruction(Type, Value);
+        }
     }
 
     [SerializeField]
@@ -74,21 +86,49 @@ public class Day8 : MonoBehaviour
             m_Instructions.Add(new Instruction(lineSplitted[0], lineSplitted[1]));
         }
 
-        RunInstructions();
+        RunInstructions(m_Instructions);
+
+        FixInstructions();
     }
 
-    private void RunInstructions()
+    private int RunInstructions(List<Instruction> instructions)
     {
         int instructionID = 0;
 
         int accumulator = 0;
 
-        while (m_Instructions[instructionID].Execute(ref accumulator, out int jumpValue))
+        while (instructionID < instructions.Count && instructions[instructionID].Execute(ref accumulator, out int jumpValue))
         {
-            Debug.Log("Instruction executed: " + instructionID);
             instructionID += jumpValue;
         }
 
         Debug.LogError("Final instruction " + instructionID + ". Accumulator value = " + accumulator);
+
+        return instructionID;
+    }
+
+    private void FixInstructions()
+    {
+        for (int i = 0; i < m_Instructions.Count; i++)
+        {
+            List<Instruction> alteredInstructions = new List<Instruction>();
+            m_Instructions.ForEach(inst => alteredInstructions.Add((Instruction)inst.Clone()));
+
+            switch (alteredInstructions[i].Type)
+            {
+                case Instruction.InstructionType.jmp:
+                    alteredInstructions[i].Type = Instruction.InstructionType.nop;
+                    break;
+                case Instruction.InstructionType.nop:
+                    alteredInstructions[i].Type = Instruction.InstructionType.jmp;
+                    break;
+            }
+
+            if (RunInstructions(alteredInstructions) >= m_Instructions.Count)
+            {
+                Debug.LogError("Modified instruction " + i);
+                return;
+            }
+        }
     }
 }
