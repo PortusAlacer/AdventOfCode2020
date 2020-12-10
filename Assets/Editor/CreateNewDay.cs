@@ -9,7 +9,7 @@ public class CreateNewDay : ScriptableWizard
     public int DayID = 0;
 
     [MenuItem("Tools/Create New Day")]
-    static void CreateWizard()
+    private static void CreateWizard()
     {
         DisplayWizard<CreateNewDay>("Create New Day", "Create");
     }
