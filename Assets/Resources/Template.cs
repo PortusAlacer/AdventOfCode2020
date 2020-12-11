@@ -7,9 +7,17 @@ public class Template : MonoBehaviour
     [SerializeField]
     private TextAsset m_Input = null;
 
-    void Start()
+    private void Start()
     {
         string input = m_Input.text;
         string[] inputLines = input.Split('\n');
+
+        foreach (string line in inputLines)
+        {
+            if (string.IsNullOrEmpty(line))
+            {
+                continue;
+            }
+        }
     }
 }
