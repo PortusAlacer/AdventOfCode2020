@@ -87,6 +87,72 @@ public class Day11 : MonoBehaviour
                 return false;
             }
 
+            public bool CheckVisibleChanges()
+            {
+                if (CurrentState == State.Floor)
+                {
+                    return false;
+                }
+
+                int countOccupied = 0;
+
+                countOccupied += CheckVisibleLine(new Vector2Int(-1, -1));
+                countOccupied += CheckVisibleLine(new Vector2Int( 0, -1));
+                countOccupied += CheckVisibleLine(new Vector2Int( 1, -1));
+                countOccupied += CheckVisibleLine(new Vector2Int( 1,  0));
+                countOccupied += CheckVisibleLine(new Vector2Int( 1,  1));
+                countOccupied += CheckVisibleLine(new Vector2Int( 0,  1));
+                countOccupied += CheckVisibleLine(new Vector2Int(-1,  1));
+                countOccupied += CheckVisibleLine(new Vector2Int(-1,  0));
+
+                switch (CurrentState)
+                {
+                    case State.Empty:
+                        if (countOccupied == 0)
+                        {
+                            m_ProposesNewState = State.Occupied;
+                            return true;
+                        }
+                        else
+                        {
+                            m_ProposesNewState = CurrentState;
+                            return false;
+                        }
+                    case State.Occupied:
+                        if (countOccupied >= 5)
+                        {
+                            m_ProposesNewState = State.Empty;
+                            return true;
+                        }
+                        else
+                        {
+                            m_ProposesNewState = CurrentState;
+                            return false;
+                        }
+                }
+
+                return false;
+            }
+
+            private int CheckVisibleLine(Vector2Int step)
+            {
+                for (Vector2Int coords = m_Coordinates + step; coords.x >= 0 && coords.y >= 0 && coords.x < m_AllSeats.GetLength(0) && coords.y < m_AllSeats.GetLength(1); coords += step)
+                {
+                    Seat otherSeat = m_AllSeats[coords.x, coords.y];
+                    switch (otherSeat.CurrentState)
+                    {
+                        case State.Floor:
+                            continue;
+                        case State.Occupied:
+                            return 1;
+                        case State.Empty:
+                            return 0;
+                    }
+                }
+
+                return 0;
+            }
+
             internal void ApplyChange()
             {
                 CurrentState = m_ProposesNewState;
@@ -132,6 +198,19 @@ public class Day11 : MonoBehaviour
             return iteration;
         }
 
+        public int IterateVisible()
+        {
+            int iteration = 1;
+
+            while (CheckAllVisibleChanges())
+            {
+                ApplyChanges();
+                iteration++;
+            }
+
+            return iteration;
+        }
+
         public int CountOccupied()
         {
             int countOccupied = 0;
@@ -151,6 +230,18 @@ public class Day11 : MonoBehaviour
             foreach (Seat seat in  m_Seats)
             {
                 needsChange |= seat.CheckChange();
+            }
+
+            return needsChange;
+        }
+
+        private bool CheckAllVisibleChanges()
+        {
+            bool needsChange = false;
+
+            foreach (Seat seat in m_Seats)
+            {
+                needsChange |= seat.CheckVisibleChanges();
             }
 
             return needsChange;
@@ -185,8 +276,11 @@ public class Day11 : MonoBehaviour
         string[] inputLines = input.Split('\n');
 
         Ferry ferry = new Ferry(inputLines);
-
         Debug.LogWarning("Stable with " + ferry.Iterate() + " iterations");
         Debug.LogWarning(ferry.CountOccupied() + " occupied seats");
+
+        ferry = new Ferry(inputLines);
+        Debug.LogWarning("Stable with " + ferry.IterateVisible() + " visible iterations");
+        Debug.LogWarning(ferry.CountOccupied() + " occupied seats with visible check");
     }
 }
