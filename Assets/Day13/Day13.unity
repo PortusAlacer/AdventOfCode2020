@@ -343,4 +343,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Inputs:
   - {fileID: 4900000, guid: ebdcf505435f1f547aefcfc6192cd25e, type: 3}
-  - {fileID: 4900000, guid: 30357518fae7efd428969af5592c737d, type: 3}
