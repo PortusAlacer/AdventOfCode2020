@@ -14,7 +14,7 @@ public class Template : MonoBehaviour
             Debug.LogError("Running asset " + i);
             float startTime = Time.time;
             Run(i, m_Inputs[i]);
-            Debug.LogError("Finished asset " + i + " it took " + (Time.time - startTime)  + " seconds");
+            Debug.Log("Finished asset " + i + " it took " + (Time.time - startTime)  + " seconds");
         }
     }
 
