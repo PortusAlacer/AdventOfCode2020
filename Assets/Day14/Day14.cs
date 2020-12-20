@@ -6,42 +6,52 @@ using UnityEngine;
 
 public class MyBitArray
 {
-    internal bool[] m_Array;
+    public bool[] Array;
 
     public MyBitArray(int capacity, bool defaultValue = false)
     {
-        m_Array = new bool[capacity];
+        Array = new bool[capacity];
 
-        for (int i = 0; i < m_Array.Length; i++)
+        for (int i = 0; i < Array.Length; i++)
         {
-            m_Array[i] = defaultValue;
+            Array[i] = defaultValue;
         }
     }
 
 
     public MyBitArray(int capacity, Int64 decimalValue)
     {
-        m_Array = new bool[capacity];
+        Array = new bool[capacity];
 
-        for (int i = 0; i < m_Array.Length; i++)
+        for (int i = 0; i < Array.Length; i++)
         {
-            m_Array[i] = false;
+            Array[i] = false;
         }
 
         bool[] decimalInBinary = Convert.ToString(decimalValue, 2).Select(s => s.Equals('1')).ToArray();
 
-        int idArray = m_Array.Length - 1;
+        int idArray = Array.Length - 1;
         for (int i = decimalInBinary.Length - 1; i >= 0; i--)
         {
-            m_Array[idArray] = decimalInBinary[i];
+            Array[idArray] = decimalInBinary[i];
             idArray--;
+        }
+    }
+
+    public MyBitArray(MyBitArray bitArray)
+    {
+        Array = new bool[bitArray.Array.Length];
+
+        for(int i = 0; i < Array.Length; i++)
+        {
+            Array[i] = bitArray.Array[i];
         }
     }
 
     public bool this[int id]
     {
-        get => m_Array[id];
-        set { m_Array[id] = value; }
+        get => Array[id];
+        set { Array[id] = value; }
     }
 }
 
@@ -49,8 +59,8 @@ public static class MyBitArrayExtensions
 {
     public static MyBitArray And(this MyBitArray me, MyBitArray other)
     {
-        MyBitArray result = new MyBitArray(me.m_Array.Length);
-        for (int i = 0; i < me.m_Array.Length; i++)
+        MyBitArray result = new MyBitArray(me.Array.Length);
+        for (int i = 0; i < me.Array.Length; i++)
         {
             result[i] = me[i] && other[i];
         }
@@ -59,8 +69,8 @@ public static class MyBitArrayExtensions
 
     public static MyBitArray Or(this MyBitArray me, MyBitArray other)
     {
-        MyBitArray result = new MyBitArray(me.m_Array.Length);
-        for (int i = 0; i < me.m_Array.Length; i++)
+        MyBitArray result = new MyBitArray(me.Array.Length);
+        for (int i = 0; i < me.Array.Length; i++)
         {
             result[i] = me[i] || other[i];
         }
@@ -70,9 +80,9 @@ public static class MyBitArrayExtensions
     public static Int64 ToInt64(this MyBitArray me)
     {
         Int64 res = 0;
-        for (int i = 0; i < me.m_Array.Length; i++)
+        for (int i = 0; i < me.Array.Length; i++)
         {
-            Int64 val = me.m_Array[me.m_Array.Length - 1 - i] ? 1 : 0;
+            Int64 val = me.Array[me.Array.Length - 1 - i] ? 1 : 0;
             Int64 valShifted = val << i;
             res += valShifted;
         }
@@ -91,7 +101,7 @@ public class Day14 : MonoBehaviour
             [Serializable]
             private class Override
             {
-                public int Bit;
+                public Int64 Bit;
                 public Int64 Value;
             }
 
@@ -100,11 +110,18 @@ public class Day14 : MonoBehaviour
             private MyBitArray m_AndMask = new MyBitArray(36, true);
             private MyBitArray m_OrMask = new MyBitArray(36, false);
 
+            private char[] m_FullMask = new char[36];
+
             private List<Override> m_Overrides = new List<Override>();
 
             public Instruction(string mask, List<string> overrides)
             {
                 List<char> maskList = mask.Skip(7).ToList();
+
+                for (int i = 0; i < 36; i++)
+                {
+                    m_FullMask[i] = '0';
+                }
 
                 for (int i = maskList.Count - 1; i >= 0; i--)
                 {
@@ -119,13 +136,15 @@ public class Day14 : MonoBehaviour
                             m_AndMask[i] = false;
                             break;
                     }
+
+                    m_FullMask[i] = maskList[i];
                 }
 
                 foreach (string over in overrides)
                 {
                     string[] splitted = over.Split(EQUAL_SEPARATOR);
                     Int64 value = Int64.Parse(new string(splitted[1].Skip(3).ToArray()));
-                    int bit = int.Parse(new string(splitted[0].Skip(4).ToArray()));
+                    Int64 bit = Int64.Parse(new string(splitted[0].Skip(4).ToArray()));
 
                     m_Overrides.Add(new Override()
                     {
@@ -135,7 +154,7 @@ public class Day14 : MonoBehaviour
                 }
             }
 
-            internal void Apply(ref Dictionary<int, MyBitArray> memory)
+            internal void Apply(ref Dictionary<Int64, MyBitArray> memory)
             {
                 foreach(Override over in m_Overrides)
                 {
@@ -143,9 +162,59 @@ public class Day14 : MonoBehaviour
                     memory[over.Bit] = valueBit.And(m_AndMask).Or(m_OrMask);
                 }
             }
+
+            internal void ApplyOnAddress(ref Dictionary<Int64, MyBitArray> memory)
+            {
+                foreach(Override over in m_Overrides)
+                {
+                    MyBitArray bit = new MyBitArray(36, over.Bit);
+
+                    char[] copyMask = new char[36];
+                    m_FullMask.CopyTo(copyMask, 0);
+
+                    List<MyBitArray> possibleBits = GetPossibleAddresses(bit, copyMask);
+
+                    foreach(MyBitArray possibleBit in possibleBits)
+                    {
+                        Int64 bitId = possibleBit.ToInt64();
+                        memory[bitId] = new MyBitArray(36, over.Value);
+                    }
+                }
+            }
+
+            private List<MyBitArray> GetPossibleAddresses(MyBitArray address, char[] mask, int statrIndex = 0)
+            {
+                List<MyBitArray> addressesResult = new List<MyBitArray>();
+                MyBitArray newAddress = new MyBitArray(address);
+                for (int i = statrIndex; i < 36; i++)
+                {
+                    switch (mask[36 - 1- i])
+                    {
+                        case 'X':
+                            char[] copyMask = new char[36];
+                            mask.CopyTo(copyMask, 0);
+                            copyMask[36 - 1 - i] = '0';
+
+                            newAddress[36 - 1 - i] = true;
+                            addressesResult.AddRange(GetPossibleAddresses(newAddress, copyMask, i + 1));
+
+                            newAddress[36 - 1 - i] = false;
+                            addressesResult.AddRange(GetPossibleAddresses(newAddress, copyMask, i + 1));
+                            return addressesResult;
+                        case '1':
+                            newAddress[36 - 1 - i] = true;
+                            break;
+                        case '0':
+                            break;
+                    }
+                }
+                //Debug.Log(newAddress.ToInt64());
+                addressesResult.Add(newAddress);
+                return addressesResult;
+            }
         }
 
-        private Dictionary<int, MyBitArray> m_Memory = new Dictionary<int, MyBitArray>();
+        private Dictionary<Int64, MyBitArray> m_Memory = new Dictionary<Int64, MyBitArray>();
 
         private List<Instruction> m_Instructions = new List<Instruction>();
 
@@ -171,6 +240,14 @@ public class Day14 : MonoBehaviour
             }
 
             return sum;
+        }
+
+        internal void ExecuteOnAddress()
+        {
+            foreach (Instruction instruction in m_Instructions)
+            {
+                instruction.ApplyOnAddress(ref m_Memory);
+            }
         }
     }
 
@@ -200,6 +277,8 @@ public class Day14 : MonoBehaviour
 
         MemoryInfo memory = new MemoryInfo();
         m_Memories.Add(memory);
+        MemoryInfo memory2 = new MemoryInfo();
+        m_Memories.Add(memory2);
 
         for (int i = 1; i < inputLines.Length; i++)
         {
@@ -219,6 +298,7 @@ public class Day14 : MonoBehaviour
                     break;
                 case "mas":
                     memory.AddInstruction(currentMask, overrides);
+                    memory2.AddInstruction(currentMask, overrides);
 
                     currentMask = line;
                     overrides = new List<string>();
@@ -230,10 +310,13 @@ public class Day14 : MonoBehaviour
         if (overrides.Count > 0)
         {
             memory.AddInstruction(currentMask, overrides);
+            memory2.AddInstruction(currentMask, overrides);
         }
 
         memory.Execute();
-
         Debug.LogWarning("Result: " + memory.GetSum());
+
+        memory2.ExecuteOnAddress();
+        Debug.LogWarning("Result 2: " + memory2.GetSum());
     }
 }
