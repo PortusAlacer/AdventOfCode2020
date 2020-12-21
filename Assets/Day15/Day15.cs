@@ -7,6 +7,9 @@ public class Day15 : MonoBehaviour
     [SerializeField]
     private List<TextAsset> m_Inputs = null;
 
+    [SerializeField]
+    private int m_LastIteration = 2020;
+
     private void Start()
     {
         for(int i = 0; i < m_Inputs.Count; i++)
@@ -63,7 +66,7 @@ public class Day15 : MonoBehaviour
             iteration++;
         }
 
-        for (; iteration <= 2020; iteration++)
+        for (; iteration <= m_LastIteration; iteration++)
         {
             int previousNumber = numbers[iteration - 1 - 1];
             int newNumber = 0;
