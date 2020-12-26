@@ -26,8 +26,8 @@ public class Day18 : MonoBehaviour
         string input = inputAsset.text;
         string[] inputLines = input.Split('\n');
 
-        long result = 0;
-
+        ulong result = 0;
+        ulong result2 = 0;
         foreach (string line in inputLines)
         {
             if (string.IsNullOrEmpty(line))
@@ -39,16 +39,21 @@ public class Day18 : MonoBehaviour
                                             .Where(c => !Char.IsWhiteSpace(c))
                                             .ToArray());
 
-            long parcialResult = PerformCalculation(cleanedLine);
-            Debug.Log("parcial result for: '" + line + "' is " + parcialResult);
+            ulong parcialResult = PerformCalculation(cleanedLine);
+            ulong parcialResult2 = PerformCalculation(cleanedLine, true);
 
-            result += parcialResult;
+            Debug.Log("parcial result for: '" + line + "' is " + parcialResult);
+            Debug.Log("parcial result 2 for: '" + line + "' is " + parcialResult2);
+
+            //result += parcialResult;
+            result2 += parcialResult2;
         }
 
         Debug.LogWarning("Result: " + result);
+        Debug.LogWarning("Result 2: " + result2);
     }
 
-    private long PerformCalculation(string line)
+    private ulong PerformCalculation(string line, bool additionFirst = false)
     {
         Regex rx = new Regex(@"\([^\(\)]+\)");
 
@@ -58,46 +63,69 @@ public class Day18 : MonoBehaviour
         {
             string matchString = match.ToString();
             string insideParentisis = new string(matchString.Skip(1).Take(match.Length - 2).ToArray());
-            string calculationOutput = PerformCalculation(insideParentisis).ToString();
 
-            line = line.Replace(matchString, calculationOutput);
+            line = ReplaceMatch(matchString, insideParentisis, line, additionFirst);
 
             match = rx.Match(line);
         }
 
-        char[] characters = line.ToCharArray();
 
-        string[] splitted = line.Split(new char[2] { '+', '*' });
-
-        int currentOperatorIndex = splitted[0].Length;
-        char oper = characters[currentOperatorIndex];
-        long result = 0;
-        switch (oper)
+        if (additionFirst)
         {
-            case '*':
-                result = long.Parse(splitted[0]) * long.Parse(splitted[1]);
-                break;
-            case '+':
-                result = long.Parse(splitted[0]) + long.Parse(splitted[1]);
-                break;
-        }
+            rx = new Regex(@"\d+\+\d+");
 
-        for (int i = 1; i < splitted.Length - 1; i++)
-        {
-            currentOperatorIndex += splitted[i].Length + 1;
-            oper = characters[currentOperatorIndex];
+            match = rx.Match(line);
 
-            switch(oper)
+            while (match.Success && match.ToString() != line)
             {
-                case '*':
-                    result *= long.Parse(splitted[i + 1]);
-                    break;
-                case '+':
-                    result += long.Parse(splitted[i + 1]);
-                    break;
+                string matchString = match.ToString();
+
+                line = ReplaceMatch(matchString, matchString, line, additionFirst);
+
+                match = rx.Match(line);
             }
         }
 
-        return result;
+        rx = new Regex(@"\d+(\+|\*)\d+");
+
+        match = rx.Match(line);
+
+        while (match.Success && match.ToString() != line)
+        {
+            string matchString = match.ToString();
+
+            line = ReplaceMatch(matchString, matchString, line, additionFirst);
+
+            match = rx.Match(line);
+        }
+
+        string[] parcels = line.Split(new char[2] { '+', '*' });
+
+        if (parcels.Length == 1)
+        {
+            return ulong.Parse(parcels[0]);
+        }
+
+        char[] characters = line.ToCharArray();
+        int currentOperatorIndex = parcels[0].Length;
+        char oper = characters[currentOperatorIndex];
+
+        switch (oper)
+        {
+            case '*':
+                return ulong.Parse(parcels[0]) * ulong.Parse(parcels[1]);
+            case '+':
+                return ulong.Parse(parcels[0]) + ulong.Parse(parcels[1]);
+        }
+
+        Debug.LogError("something went wrong");
+        return 0;
+    }
+
+    private string ReplaceMatch(string matchString, string calculationString, string line, bool additionFirst)
+    {
+        string calculationOutput = PerformCalculation(calculationString, additionFirst).ToString();
+
+        return line.Replace(matchString, calculationOutput);
     }
 }
